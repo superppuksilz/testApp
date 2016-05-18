@@ -26,7 +26,6 @@ import java.util.TimerTask;
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     SensorData sensor = new SensorData();
-    Weather w = new Weather();
 
     private SensorManager SensorMan;
     private Sensor Gyro;
@@ -72,16 +71,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             sensor.setGyroX(Math.round(se.values[0] * 1000));
             sensor.setGyroY(Math.round(se.values[1] * 1000));
             sensor.setGyroZ(Math.round(se.values[2] * 1000));
-
-            //System.out.println("Gyro :" + gyroX + "  " + gyroY + "  " + gyroZ);
         }
         if(s.getType() == Sensor.TYPE_ACCELEROMETER){
             sensor.setAccX((int)se.values[0]);
-            sensor.setAccX((int)se.values[1]);
-            sensor.setAccX((int)se.values[2]);
-
-            //System.out.println("Acc :" +accX + "  " + accY + "  " + accZ);
-            //SystemClock.sleep(100);
+            sensor.setAccY((int)se.values[1]);
+            sensor.setAccZ((int)se.values[2]);
         }
     }
 
@@ -110,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (sensor.checkEmergency()) {
+                        if (sensor.checkEmergency2()) {
                             final AlertDialog.Builder dlg = new AlertDialog.Builder(MainActivity.this);
                             dlg.setTitle("Emergency");
                             dlg.setMessage("Emergency Detected");
@@ -146,7 +140,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         //Log.i("Test", "Timer start");
                         if(stat) {
                             String res = sensor.getAllData();
-                            System.out.println(res);
                             txt.setText(res);
                             writeFile(fileName, res);
                         }

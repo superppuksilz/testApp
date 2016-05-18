@@ -3,73 +3,54 @@ package com.example.renesys.acceltest;
 /**
  * Created by RENESYS on 2016-05-08.
  */
+
+
 public class SensorData {
-    int accX, accY, accZ;
-    int gyroX, gyroY, gyroZ;
+    final static int VECTOR_SIZE = 2;
+
+    int[] currrentVector = {0, 0, 0, 0, 0, 0};
+    int[][] standardVector = {
+            {0, 6, 7, 0, 0, 0},
+            //{0, 6, 7, 400, 0, 0},
+            {5, 0, 6, 0, 0, 0},
+            //{5, 0, 6, 1000, 0, 0}
+    };
 
     public SensorData(){
-        accX = 0;
-        accY = 0;
-        accZ = 0;
-        gyroX = 0;
-        gyroY = 0;
-        gyroZ = 0;
+
     }
 
-    public int getAccX() {
-        return accX;
-    }
 
     public void setAccX(int accX) {
-        this.accX = accX;
-    }
-
-    public int getAccY() {
-        return accY;
+        this.currrentVector[0] = accX;
     }
 
     public void setAccY(int accY) {
-        this.accY = accY;
-    }
-
-    public int getAccZ() {
-        return accZ;
+        this.currrentVector[1] = accY;
     }
 
     public void setAccZ(int accZ) {
-        this.accZ = accZ;
-    }
-
-    public int getGyroX() {
-        return gyroX;
+        this.currrentVector[2] = accZ;
     }
 
     public void setGyroX(int gyroX) {
-        this.gyroX = gyroX;
-    }
-
-    public int getGyroY() {
-        return gyroY;
+        this.currrentVector[3] = gyroX;
     }
 
     public void setGyroY(int gyroY) {
-        this.gyroY = gyroY;
-    }
-
-    public int getGyroZ() {
-        return gyroZ;
+        this.currrentVector[4] = gyroY;
     }
 
     public void setGyroZ(int gyroZ) {
-        this.gyroZ = gyroZ;
+        this.currrentVector[5] = gyroZ;
     }
 
     private int detectAccX(){
         int stat = 0;
-        if(accX < -15 || accX > 15){
+        if(currrentVector[0] < -15 || currrentVector[0] > 15){
             stat = 1;
         }
-        if(accX > 8000 || accX < -8000){
+        if(currrentVector[0] > 8000 || currrentVector[0] < -8000){
             stat = 3;
         }
         return stat;
@@ -77,10 +58,10 @@ public class SensorData {
 
     private int detectAccY(){
         int stat = 0;
-        if(accY < -10 || accY > 10){
+        if(currrentVector[1] < -15 || currrentVector[1] > 15){
             stat = 1;
         }
-        if(accY > 5000 || accY < -5000){
+        if(currrentVector[1] > 5000 || currrentVector[1] < -5000){
             stat = 3;
         }
         return stat;
@@ -88,38 +69,66 @@ public class SensorData {
 
     private int detectAccZ(){
         int stat = 0;
-        if(accZ < -10 || accZ > 10){
+        if(currrentVector[2] < -15 || currrentVector[2] > 15){
             stat = 1;
         }
-        if(accZ > 3500 || accZ < -3500){
+        if(currrentVector[2] > 3500 || currrentVector[2] < -3500){
             stat = 3;
         }
         return stat;
     }
 
     private int detectGyroX(){
-        return gyroX >= -700  && gyroX <= 700 ? 0 : 1;
+        return currrentVector[3] >= -700  && currrentVector[3] <= 700 ? 0 : 1;
     }
 
     private int detectGyroY(){
-        return gyroY >= -800 && gyroY <= 800 ? 0 : 1;
+        return currrentVector[4] >= -800 && currrentVector[4] <= 800 ? 0 : 1;
     }
 
     private int detectGyroZ(){
-        return gyroZ >= -1000 && gyroZ <= 1000 ? 0 : 1;
+        return currrentVector[5] >= -1000 && currrentVector[5] <= 1000 ? 0 : 1;
+    }
+
+    public double cosineSim(int[] stdVector){
+        double res = 0;
+        double qi = 0, q = 0, i = 0;
+
+        for(int it = 0; it < 6; it++){
+            qi += Math.abs(currrentVector[it]) * Math.abs(stdVector[it]);
+            q += currrentVector[it] * currrentVector[it];
+            i += stdVector[it] * stdVector[it];
+        }
+        res = qi / (Math.sqrt(q) * Math.sqrt(i));
+        return res;
     }
 
     public boolean checkEmergency(){
         int status = detectAccX() + detectAccY() + detectAccZ()
                 + detectGyroX() +detectGyroY() +detectGyroZ();
-        System.out.println(gyroX + " " + gyroY + " " + gyroZ +
-                " " + accX + " " + accY + " " + accZ);
         return status >= 4;
     }
 
+
+    public boolean checkEmergency2(){
+        boolean check = false;
+        for(int i = 0; i < VECTOR_SIZE; i++) {
+            double d = cosineSim(standardVector[i]);
+            if (d < 5.0e-4){
+                check = true;
+                break;
+            }
+        }
+        return check;
+    }
+
     public String getAllData(){
-        return gyroX + " " + gyroY + " " + gyroZ +
-                " " + accX + " " + accY + " " + accZ + "\n";
+        String str = "";
+        for(int i = 0; i < 5; i++){
+            str += currrentVector[i] + " ";
+        }
+        str += (currrentVector[5] + "\n");
+        return str;
     }
 
 
